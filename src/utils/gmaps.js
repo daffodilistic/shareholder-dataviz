@@ -31,7 +31,7 @@ export default function init() {
   const script = document.createElement('script');
   script.async = true;
   script.defer = true;
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=${CALLBACK_NAME}`;
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=${CALLBACK_NAME}&libraries=visualization`;
   script.onerror = rejectInitPromise;
   document.querySelector('head').appendChild(script);
 
