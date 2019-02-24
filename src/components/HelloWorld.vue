@@ -85,18 +85,17 @@ export default {
   methods: {
     saveFile() {
       if (this.data != null) {
-        var blob = new Blob(JSON.stringify(this.data), {type: "text/plain;charset=utf-8"});
+        var blob = new Blob([JSON.stringify(this.data)], {type: "text/plain;charset=utf-8"});
         saveAs(blob, "shareholder-dataviz.txt");
       }
     },
     generateData() {
-      var userPostalCode = [];
-      
+      var userList = [];
+      var sharesCounter = 0;
       for (var i = 20; i < this.fileData.length; i++) {
-        console.log(this.fileData[i]);
-        var address = this.fileData[i];
-        if (address[3] == "SINGAPORE") {
-          var postalCode = this.fileData[i][7];
+        var userEntry = this.fileData[i];
+        if (userEntry[7] != "" && userEntry[7] != null && userEntry[7] != undefined) {
+          var postalCode = userEntry[7];
           
           var foundObject = this.geocodeData.find((e) => {
             return (
@@ -108,21 +107,47 @@ export default {
               foundObject.LATITUDE,
               foundObject.LONGITUDE
             ];
-            userPostalCode.push(gpsCoord);
+
+            var shareholdings = parseInt(userEntry[8].split(',').join(''));
+            if (shareholdings > sharesCounter) {
+              sharesCounter = shareholdings;
+            }
+            var userObject = {
+              gpsCoord: gpsCoord,
+              shares: shareholdings
+            }
+
+            // console.log(userObject);
+            userList.push(userObject);
           }
         }
       }
 
-      if (userPostalCode.length > 0) {
-        this.data = userPostalCode;
-        this.weighShareholdings();
+      if (userList.length > 0) {
+        this.data = userList;
+        this.weighShareholdings(sharesCounter);
         // console.log(this.data);
 
-        L.heatLayer(this.data, {radius: 25}).addTo(this.mapRef);
+        L.heatLayer(this.data, {
+          maxZoom: 12
+        }).addTo(this.mapRef);
       }
     },
-    weighShareholdings() {
-      // TODO assign heat intensity based on shareholdings
+    weighShareholdings(totalShares) {
+      console.log("totalShares is " + totalShares);
+      var weightedList = [];
+      
+      this.data.forEach((e) => {
+        var heatPoint =[
+          e.gpsCoord[0],
+          e.gpsCoord[1],
+          1.0 * e.shares / totalShares
+        ];
+        //console.log(heatPoint);
+        weightedList.push(heatPoint);
+      });
+      this.data = weightedList;
+      // console.log(this.data);
     },
     generateRandomData() {
       var userPostalCode = [];
