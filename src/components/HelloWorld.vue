@@ -7,15 +7,25 @@
           <div class="file-field input-field">
             <div class="btn">
               <span>File</span>
-              <input ref="fileInput" v-on:change="onFileChanged" type="file" />
+              <input v-bind:disabled="isReady == false" ref="fileInput" v-on:change="onFileChanged" type="file" />
             </div>
             <div class="file-path-wrapper">
-              <input class="file-path validate" type="text" />
+              <input v-bind:disabled="isReady == false" class="file-path validate" type="text" />
             </div>
           </div>
         </form>
         <br><br>
         <div id="map"></div>
+      </div>
+      <br>
+      <div class="col s6">
+        <div class="row">
+          <div class="col s3 offset-s9">
+            <div class="btn" v-on:click="saveFile">
+              <span>Save raw data to file</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -23,7 +33,8 @@
 
 <script>
 import XLSX from 'xlsx';
-import gmapsInit from '@/utils/gmaps';
+import L from '@/utils/leafletWrapper'
+import { saveAs } from 'file-saver';
 
 export default {
   name: "HelloWorld",
@@ -34,25 +45,24 @@ export default {
     return {
       geocodeData: null,
       data: null,
-      mapRef: null
+      mapRef: null,
+      fileData:null,
+      isReady: false
     }
   },
   async mounted() {
     try {
-      const google = await gmapsInit();
-      const geocoder = new google.maps.Geocoder();
-      const map = new google.maps.Map(document.getElementById('map'));
+      const MAPBOX_API_KEY = 'pk.eyJ1IjoiZGFmZm9kaWxpc3RpYyIsImEiOiJjam1kOGJ6M2YwbXRrM3Ztb2JwMHIzOTU5In0.mnbPSjRIinjgf8VBzPuHtg';
+      const map = L.map('map').setView([1.3521, 103.8198], 12);
 
+      L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+          attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+          maxZoom: 18,
+          id: 'mapbox.streets',
+          accessToken: MAPBOX_API_KEY
+      }).addTo(map);
+      
       this.mapRef = map;
-
-      geocoder.geocode({ address: 'Singapore' }, (results, status) => {
-        if (status !== 'OK' || !results[0]) {
-          throw new Error(status);
-        }
-
-        map.setCenter(results[0].geometry.location);
-        map.fitBounds(results[0].geometry.viewport);
-      });
     } catch (error) {
       console.error(error);
     }
@@ -65,19 +75,7 @@ export default {
         // handle success
         // console.log(response.data);
         this.geocodeData = response.data;
-        this.generateData();
-
-        var heatmap = new google.maps.visualization.HeatmapLayer({
-          data: this.data,
-          map: this.mapRef
-        });
-        // heatmap.setMap(heatmap.getMap() ? null : this.mapRef);
-
-        // console.log("mapRef is " + this.mapRef);
-
-        // heatmap.setMap(this.mapRef);
-
-        // delete this.geocodeData;
+        this.isReady = true;
       })
       .catch((error) => {
         // handle error
@@ -85,16 +83,57 @@ export default {
       })
   },
   methods: {
+    saveFile() {
+      if (this.data != null) {
+        var blob = new Blob(JSON.stringify(this.data), {type: "text/plain;charset=utf-8"});
+        saveAs(blob, "shareholder-dataviz.txt");
+      }
+    },
     generateData() {
+      var userPostalCode = [];
+      
+      for (var i = 20; i < this.fileData.length; i++) {
+        console.log(this.fileData[i]);
+        var address = this.fileData[i];
+        if (address[3] == "SINGAPORE") {
+          var postalCode = this.fileData[i][7];
+          
+          var foundObject = this.geocodeData.find((e) => {
+            return (
+              e["POSTAL"] == postalCode);
+          });
+
+          if (foundObject != null || foundObject != undefined) {
+            var gpsCoord = [
+              foundObject.LATITUDE,
+              foundObject.LONGITUDE
+            ];
+            userPostalCode.push(gpsCoord);
+          }
+        }
+      }
+
+      if (userPostalCode.length > 0) {
+        this.data = userPostalCode;
+        this.weighShareholdings();
+        // console.log(this.data);
+
+        L.heatLayer(this.data, {radius: 25}).addTo(this.mapRef);
+      }
+    },
+    weighShareholdings() {
+      // TODO assign heat intensity based on shareholdings
+    },
+    generateRandomData() {
       var userPostalCode = [];
       var users = 1500;
 
       for (var i = 1; i <= users; i++) {
         var index = this.getRandomIntInclusive(0,this.geocodeData.length);
-        var gpsCoord = new google.maps.LatLng(
+        var gpsCoord = [
           this.geocodeData[index].LATITUDE,
           this.geocodeData[index].LONGITUDE
-        );
+        ];
 
         // console.log(this.geocodeData[index].LATITUDE + ", " + this.geocodeData[index].LONGITUDE);
         userPostalCode.push(gpsCoord);
@@ -112,10 +151,10 @@ export default {
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        this.data = data;
+        this.fileData = data;
 
-        console.log(this.data);
-        
+        // console.log(this.data);
+        this.generateData();
       };
       reader.readAsBinaryString(file);
     },
@@ -130,6 +169,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+@import "~leaflet/dist/leaflet.css";
 #map {
   height: 60vh;
 }

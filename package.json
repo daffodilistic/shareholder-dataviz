@@ -9,6 +9,9 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "file-saver": "^2.0.1",
+    "leaflet": "^1.4.0",
+    "leaflet.heat": "^0.2.0",
     "vue": "^2.5.22",
     "xlsx": "^0.14.1"
   },
