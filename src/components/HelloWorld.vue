@@ -94,7 +94,10 @@ export default {
       var sharesCounter = 0;
       for (var i = 20; i < this.fileData.length; i++) {
         var userEntry = this.fileData[i];
-        if (userEntry[7] != "" && userEntry[7] != null && userEntry[7] != undefined) {
+        if (userEntry[3] != "DEP AGENT" &&
+          userEntry[7] != "" &&
+          userEntry[7] != null &&
+          userEntry[7] != undefined ) {
           var postalCode = userEntry[7];
           
           var foundObject = this.geocodeData.find((e) => {
