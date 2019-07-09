@@ -12,17 +12,17 @@
     "file-saver": "^2.0.1",
     "leaflet": "^1.4.0",
     "leaflet.heat": "^0.2.0",
-    "vue": "^2.5.22",
-    "xlsx": "^0.14.1"
+    "vue": "^2.6.10",
+    "xlsx": "^0.14.3"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.4.0",
-    "@vue/cli-plugin-eslint": "^3.4.0",
-    "@vue/cli-service": "^3.4.0",
+    "@vue/cli-plugin-babel": "^3.9.2",
+    "@vue/cli-plugin-eslint": "^3.9.2",
+    "@vue/cli-service": "^3.9.2",
     "@vue/eslint-config-prettier": "^4.0.1",
-    "babel-eslint": "^10.0.1",
-    "eslint": "^5.8.0",
-    "eslint-plugin-vue": "^5.0.0",
-    "vue-template-compiler": "^2.5.21"
+    "babel-eslint": "^10.0.2",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.2.3",
+    "vue-template-compiler": "^2.6.10"
   }
 }
