@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <div class="container">
-      <h1>Shareholder Dataviz</h1>
+      <h1>Shareholder Data Visualizer</h1>
       <div class="col s6">
         <form action="#">
           <div class="file-field input-field">
@@ -38,9 +38,7 @@ import { saveAs } from 'file-saver';
 
 export default {
   name: "HelloWorld",
-  props: {
-    msg: String
-  },
+  props: {},
   data() {
     return {
       geocodeData: null,
