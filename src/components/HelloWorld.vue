@@ -95,7 +95,7 @@ export default {
     generateData() {
       var userList = [];
       var sharesCounter = 0;
-      for (var i = 20; i < this.fileData.length; i++) {
+      for (var i = 0; i < this.fileData.length; i++) {
         var userEntry = this.fileData[i];
         if (userEntry[3] != "DEP AGENT" &&
           userEntry[7] != "" &&
@@ -194,18 +194,23 @@ export default {
         const wb = XLSX.read(bstr, { type: "binary" });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        // ws['!ref'] = "A21:I";
         
-        var data = XLSX.utils.sheet_to_json(ws, {range: "A21:I", header: 1});
+        var data = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
+        // Skip first 6 rows since its garbage data
+        for (var i = 1; i <= 6; i++) {
+          data.shift();
+        }
         this.fileData = data;
-        // console.log(data);
+        // console.log(this.fileData);
 
         const endTime = Date.now();
         console.log("Time taken to load: " + (endTime - startTime) + "ms");
-        // this.generateData();
-        this.generateRandomData();
+        // Time taken to load: 5181ms
+        this.generateData();
+        // this.generateRandomData();
         const finishTime = Date.now();
         console.log("Time taken to generate data: " + (finishTime - endTime) + "ms");
+        // Time taken to generate data: 284661ms
       };
       reader.readAsBinaryString(file);
     },
