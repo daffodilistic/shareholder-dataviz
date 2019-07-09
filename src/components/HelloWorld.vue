@@ -80,6 +80,11 @@ export default {
         console.log(error);
       })
   },
+  beforeDestroy() {
+    this.geocodeData = null;
+    this.data = null;
+    this.fileData = null;
+  },
   methods: {
     saveFile() {
       if (this.data != null) {
