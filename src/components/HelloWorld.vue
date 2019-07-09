@@ -33,7 +33,7 @@
 
 <script>
 import XLSX from 'xlsx';
-import L from '@/utils/leafletWrapper'
+import L from '@/utils/leafletWrapper';
 import { saveAs } from 'file-saver';
 
 export default {
@@ -135,7 +135,7 @@ export default {
       }
     },
     weighShareholdings(totalShares) {
-      console.log("totalShares is " + totalShares);
+      // console.log("totalShares is " + totalShares);
       var weightedList = [];
       
       this.data.forEach((e) => {
@@ -151,7 +151,7 @@ export default {
       // console.log(this.data);
     },
     generateRandomData() {
-      var userPostalCode = [];
+      var userList = [];
       var users = 1500;
 
       for (var i = 1; i <= users; i++) {
@@ -162,32 +162,53 @@ export default {
         ];
 
         // console.log(this.geocodeData[index].LATITUDE + ", " + this.geocodeData[index].LONGITUDE);
-        userPostalCode.push(gpsCoord);
+        var userObject = [
+          gpsCoord[0],
+          gpsCoord[1],
+          Math.random()
+        ];
+
+        userList.push(userObject);
       }
 
-      this.data = userPostalCode;
+      this.data = userList;
       // console.log(this.data);
+
+      L.heatLayer(this.data, {
+        maxZoom: 12
+      }).addTo(this.mapRef);
     },
     onFileChanged() {
+      // console.log(event.target.files);
       var file = event.target.files[0];
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = (e) => {
+        const startTime = Date.now();
+        
         const bstr = e.target.result;
         const wb = XLSX.read(bstr, { type: "binary" });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        // ws['!ref'] = "A21:I";
+        
+        var data = XLSX.utils.sheet_to_json(ws, {range: "A21:I", header: 1});
         this.fileData = data;
+        // console.log(data);
 
-        // console.log(this.data);
-        this.generateData();
+        const endTime = Date.now();
+        console.log("Time taken to load: " + (endTime - startTime) + "ms");
+        // this.generateData();
+        this.generateRandomData();
+        const finishTime = Date.now();
+        console.log("Time taken to generate data: " + (finishTime - endTime) + "ms");
       };
       reader.readAsBinaryString(file);
     },
     getRandomIntInclusive(min, max) {
       min = Math.ceil(min);
       max = Math.floor(max);
-      return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
+      // The maximum is inclusive and the minimum is inclusive
+      return Math.floor(Math.random() * (max - min + 1)) + min;
     }
   }
 };
