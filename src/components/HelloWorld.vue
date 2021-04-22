@@ -55,7 +55,7 @@ export default {
       data: null,
       mapRef: null,
       fileData: null,
-      isReady: false
+      isReady: false,
     };
   },
   async mounted() {
@@ -67,15 +67,15 @@ export default {
       const map = L.map("map").setView([1.3521, 103.8198], 12);
 
       L.tileLayer(
-        "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}",
+        "https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/{z}/{x}/{y}?access_token={accessToken}",
         {
           attribution:
             'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
           maxZoom: 18,
-          id: "mapbox.streets",
-          accessToken: MAPBOX_API_KEY
+          id: "mapbox.mapbox-streets-v8",
+          accessToken: MAPBOX_API_KEY,
         }
       ).addTo(map);
 
@@ -89,13 +89,13 @@ export default {
       .get(
         "https://raw.githubusercontent.com/xkjyeah/singapore-postal-codes/master/buildings.json"
       )
-      .then(response => {
+      .then((response) => {
         // handle success
         // console.log(response.data);
         this.geocodeData = lodash.keyBy(response.data, "POSTAL");
         this.isReady = true;
       })
-      .catch(error => {
+      .catch((error) => {
         // handle error
         console.log(error);
       });
@@ -109,7 +109,7 @@ export default {
     saveFile() {
       if (this.data != null) {
         var blob = new Blob([JSON.stringify(this.data)], {
-          type: "text/plain;charset=utf-8"
+          type: "text/plain;charset=utf-8",
         });
         saveAs(blob, "shareholder-dataviz.txt");
       }
@@ -138,7 +138,7 @@ export default {
             }
             var userObject = {
               gpsCoord: gpsCoord,
-              shares: shareholdings
+              shares: shareholdings,
             };
 
             // console.log(userObject);
@@ -153,7 +153,7 @@ export default {
         this.weighShareholdings(sharesCounter);
 
         L.heatLayer(this.data, {
-          maxZoom: 12
+          maxZoom: 12,
         }).addTo(this.mapRef);
       }
     },
@@ -161,11 +161,11 @@ export default {
       // console.log("totalShares is " + totalShares);
       var weightedList = [];
 
-      this.data.forEach(e => {
+      this.data.forEach((e) => {
         var heatPoint = [
           e.gpsCoord[0],
           e.gpsCoord[1],
-          (1.0 * e.shares) / totalShares
+          (1.0 * e.shares) / totalShares,
         ];
         //console.log(heatPoint);
         weightedList.push(heatPoint);
@@ -184,7 +184,7 @@ export default {
         var postalCode = keys[index];
         var gpsCoord = [
           this.geocodeData[postalCode].LATITUDE,
-          this.geocodeData[postalCode].LONGITUDE
+          this.geocodeData[postalCode].LONGITUDE,
         ];
 
         // console.log(this.geocodeData[index].LATITUDE + ", " + this.geocodeData[index].LONGITUDE);
@@ -198,14 +198,14 @@ export default {
 
       L.heatLayer(this.data, {
         // maxZoom: 12,
-        max: users
+        max: users,
       }).addTo(this.mapRef);
     },
     onFileChanged() {
       // console.log(event.target.files);
       var file = event.target.files[0];
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = (e) => {
         // const startTime = Date.now();
 
         const bstr = e.target.result;
@@ -215,7 +215,7 @@ export default {
 
         var data = XLSX.utils.sheet_to_json(ws, {
           header: 1,
-          blankrows: false
+          blankrows: false,
         });
         // Skip first 6 rows since its garbage data
         for (var i = 1; i <= 6; i++) {
@@ -236,8 +236,8 @@ export default {
       max = Math.floor(max);
       // The maximum is inclusive and the minimum is inclusive
       return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-  }
+    },
+  },
 };
 </script>
 
