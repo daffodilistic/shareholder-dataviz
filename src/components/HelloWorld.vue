@@ -29,10 +29,15 @@
       <br />
       <div class="col s6">
         <div class="row">
-          <div class="col s3 offset-s9">
-            <div class="btn" v-on:click="saveFile">
+          <div class="col s6">
+            <a class="btn" v-on:click="saveFile">
               <span>Save raw data to file</span>
-            </div>
+            </a>
+          </div>
+          <div class="col s6">
+            <a class="btn cyan" v-on:click="generateRandomData">
+              <span>Generate random data</span>
+            </a>
           </div>
         </div>
       </div>
@@ -49,6 +54,11 @@ import lodash from "lodash";
 export default {
   name: "HelloWorld",
   props: {},
+  computed: {
+    indexedPostalCode() {
+      return Object.keys(this.geocodeData);
+    }
+  },
   data() {
     return {
       geocodeData: null,
@@ -56,6 +66,7 @@ export default {
       mapRef: null,
       fileData: null,
       isReady: false,
+      heatMap: null,
     };
   },
   async mounted() {
@@ -74,7 +85,6 @@ export default {
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
           maxZoom: 18,
-          id: "mapbox.mapbox-streets-v8",
           accessToken: MAPBOX_API_KEY,
         }
       ).addTo(map);
@@ -148,7 +158,7 @@ export default {
       }
 
       if (userList.length > 0) {
-        this.fileData.length = 0;
+        this.fileData = null;
         this.data = userList;
         this.weighShareholdings(sharesCounter);
 
@@ -174,14 +184,28 @@ export default {
       // console.log(this.data);
     },
     generateRandomData() {
-      this.fileData.length = 0;
+      if (this.heatMap) {
+        this.heatMap.remove();
+        this.heatMap = null;
+      }
+      this.fileData = null;
+      this.data = null;
+
       const users = 5000;
-      const keys = Object.keys(this.geocodeData);
+      const keys = this.indexedPostalCode;
 
       var userList = [];
       for (var i = 1; i <= users; i++) {
-        var index = this.getRandomIntInclusive(0, keys.length);
+        var index = this.getRandomIntInclusive(0, keys.length - 1);
         var postalCode = keys[index];
+
+        // if (this.geocodeData[postalCode] == null) {
+        //   console.warn("array length is" + keys.length);
+        //   console.warn("index is " + index);
+        //   console.warn("Invalid postalcode: " + postalCode);
+        //   continue;
+        // }
+        
         var gpsCoord = [
           this.geocodeData[postalCode].LATITUDE,
           this.geocodeData[postalCode].LONGITUDE,
@@ -196,7 +220,7 @@ export default {
       this.data = userList;
       // console.log(this.data);
 
-      L.heatLayer(this.data, {
+      this.heatMap = L.heatLayer(this.data, {
         // maxZoom: 12,
         max: users,
       }).addTo(this.mapRef);
