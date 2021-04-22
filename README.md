@@ -1,4 +1,7 @@
-# shareholder-dataviz
+# Shareholder Data Visualizer
+Visualize shareholder data as a heatmap
+
+[Demo Page](https://daffodilistic.github.io/shareholder-dataviz/)
 
 ## Project setup
 ```
