@@ -14,7 +14,7 @@
     "leaflet.heat": "^0.2.0",
     "lodash": "^4.17.21",
     "vue": "^2.6.12",
-    "xlsx": "^0.14.5"
+    "xlsx": "^0.17.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.12.1",
